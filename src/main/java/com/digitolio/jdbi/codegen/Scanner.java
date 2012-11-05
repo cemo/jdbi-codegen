@@ -1,4 +1,4 @@
-package com.digitolio.jdbi.codegen.codemodel;
+package com.digitolio.jdbi.codegen;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * @author C.Koc
  */
-class Scanner {
+public class Scanner {
     public Set<Class<?>> scanPackage(String inputPackage) {
 
         List<ClassLoader> classLoadersList = new LinkedList<ClassLoader>();

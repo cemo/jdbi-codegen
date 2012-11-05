@@ -1,5 +1,6 @@
 package com.digitolio.jdbi.codegen.codemodel;
 
+import com.digitolio.jdbi.codegen.Scanner;
 import com.digitolio.jdbi.strategy.SnakeCaseTranslatingStrategy;
 import com.digitolio.jdbi.table.Table;
 import com.digitolio.jdbi.table.TableResolver;
@@ -15,7 +16,7 @@ import java.util.Set;
 public class DAOGeneratorExec {
 
     public static void main(String[] args) {
-            SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
+        SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
 
         Set<Class<?>> classes = new Scanner().scanPackage(args[0]);

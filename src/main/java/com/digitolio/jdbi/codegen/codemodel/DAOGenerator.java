@@ -1,5 +1,6 @@
 package com.digitolio.jdbi.codegen.codemodel;
 
+import com.digitolio.jdbi.StrategyAwareMapBean;
 import com.digitolio.jdbi.annotations.AutoInsert;
 import com.digitolio.jdbi.annotations.AutoUpdateByPK;
 import com.digitolio.jdbi.annotations.PK;
@@ -7,6 +8,7 @@ import com.digitolio.jdbi.auto.SqlDeleteByPk;
 import com.digitolio.jdbi.auto.SqlSelectByPK;
 import com.digitolio.jdbi.table.Column;
 import com.digitolio.jdbi.table.Table;
+import com.google.common.base.Optional;
 import com.google.common.io.Files;
 import com.sun.codemodel.*;
 import org.skife.jdbi.v2.Binding;
@@ -14,6 +16,7 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.BindBean;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +42,7 @@ public class DAOGenerator {
         JCodeModel codeModel = new JCodeModel();
 
         JDefinedClass classDefinition = createClassDefinition(codeModel, clazz);
-        addSelectById(classDefinition, table, clazz);
+        addSelectById(codeModel, classDefinition, table, clazz);
         addInsert(classDefinition, table, clazz);
         addUpdate(classDefinition, table, clazz);
         addDeleteById(classDefinition, table, clazz);
@@ -60,8 +63,12 @@ public class DAOGenerator {
         }
     }
 
-    private void addSelectById(JDefinedClass classDefinition, Table table, Class<?> clazz) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "sqlSelectById");
+    private void addSelectById(JCodeModel codeModel, JDefinedClass classDefinition, Table table, Class<?> clazz) {
+        JClass jClass = codeModel.ref(Optional.class).narrow(codeModel.ref(clazz));
+        JMethod method = classDefinition.method(JMod.ABSTRACT, jClass, "sqlSelectById");
+        method.type();
+        method.annotate(StrategyAwareMapBean.class);
+        method.annotate(SingleValueResult.class);
         JAnnotationUse selectAnnotation = method.annotate(SqlUpdate.class);
         SqlSelectByPK sqlSelectById = new SqlSelectByPK(table);
         selectAnnotation.param("value", sqlSelectById.generate(new Binding()));
