@@ -12,10 +12,7 @@ import com.google.common.base.Optional;
 import com.google.common.io.Files;
 import com.sun.codemodel.*;
 import org.skife.jdbi.v2.Binding;
-import org.skife.jdbi.v2.sqlobject.Bind;
-import org.skife.jdbi.v2.sqlobject.BindBean;
-import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
-import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.*;
 import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
 
 import java.io.File;
@@ -69,7 +66,7 @@ public class DAOGenerator {
         method.type();
         method.annotate(StrategyAwareMapBean.class);
         method.annotate(SingleValueResult.class);
-        JAnnotationUse selectAnnotation = method.annotate(SqlUpdate.class);
+        JAnnotationUse selectAnnotation = method.annotate(SqlQuery.class);
         SqlSelectByPK sqlSelectById = new SqlSelectByPK(table);
         selectAnnotation.param("value", sqlSelectById.generate(new Binding()));
         for (Column column : table.getPrimaryKeyColumns()) {
