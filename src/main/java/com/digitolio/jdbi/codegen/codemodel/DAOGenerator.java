@@ -52,7 +52,7 @@ public class DAOGenerator {
     }
 
     private void addDeleteById(JDefinedClass classDefinition, Table table, Class clazz) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "deleteByPK");
+        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "delete" + clazz.getSimpleName());
         JAnnotationUse deleteAnnotation = method.annotate(SqlUpdate.class);
         SqlDeleteByPk sqlDeleteById = new SqlDeleteByPk(table);
         deleteAnnotation.param("value", sqlDeleteById.generate(new Binding()));
@@ -65,7 +65,7 @@ public class DAOGenerator {
 
     private void addSelectById(JCodeModel codeModel, JDefinedClass classDefinition, Table table, Class<?> clazz) {
         JClass jClass = codeModel.ref(Optional.class).narrow(codeModel.ref(clazz));
-        JMethod method = classDefinition.method(JMod.ABSTRACT, jClass, "sqlSelectById");
+        JMethod method = classDefinition.method(JMod.ABSTRACT, jClass, "select"+ clazz.getSimpleName());
         method.type();
         method.annotate(StrategyAwareMapBean.class);
         method.annotate(SingleValueResult.class);
@@ -80,7 +80,7 @@ public class DAOGenerator {
     }
 
     private void addUpdate(JDefinedClass classDefinition, Table table, Class entity) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "update");
+        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "update"+ clazz.getSimpleName());
         method.annotate(AutoUpdateByPK.class);
         method.annotate(SqlUpdate.class);
         JVar param = method.param(entity, uncapitalize(entity.getSimpleName()));
@@ -91,7 +91,7 @@ public class DAOGenerator {
         List<Column> pkColumns = table.getPrimaryKeyColumns();
         Field field = getAutoIncrementField(pkColumns);
         Class returnType = field != null ? field.getType() : Integer.class;
-        JMethod method = classDefinition.method(JMod.ABSTRACT, returnType, "insert");
+        JMethod method = classDefinition.method(JMod.ABSTRACT, returnType, "insert" + clazz.getSimpleName());
         method.annotate(AutoInsert.class);
         if (field != null) {
             method.annotate(GetGeneratedKeys.class);
