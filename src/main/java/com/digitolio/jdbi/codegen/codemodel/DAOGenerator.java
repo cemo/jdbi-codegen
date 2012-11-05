@@ -1,4 +1,4 @@
-package com.digitolio.jdbi.codemodel;
+package com.digitolio.jdbi.codegen.codemodel;
 
 import com.digitolio.jdbi.annotations.AutoInsert;
 import com.digitolio.jdbi.annotations.AutoUpdateByPK;

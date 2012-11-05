@@ -1,4 +1,4 @@
-package com.digitolio.jdbi.codemodel;
+package com.digitolio.jdbi.codegen.codemodel;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
