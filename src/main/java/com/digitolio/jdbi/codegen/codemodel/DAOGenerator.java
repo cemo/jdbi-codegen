@@ -80,7 +80,7 @@ public class DAOGenerator {
     }
 
     private void addUpdate(JDefinedClass classDefinition, Table table, Class entity) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "update"+ clazz.getSimpleName());
+        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "update");
         method.annotate(AutoUpdateByPK.class);
         method.annotate(SqlUpdate.class);
         JVar param = method.param(entity, uncapitalize(entity.getSimpleName()));
@@ -91,7 +91,7 @@ public class DAOGenerator {
         List<Column> pkColumns = table.getPrimaryKeyColumns();
         Field field = getAutoIncrementField(pkColumns);
         Class returnType = field != null ? field.getType() : Integer.class;
-        JMethod method = classDefinition.method(JMod.ABSTRACT, returnType, "insert" + clazz.getSimpleName());
+        JMethod method = classDefinition.method(JMod.ABSTRACT, returnType, "insert");
         method.annotate(AutoInsert.class);
         if (field != null) {
             method.annotate(GetGeneratedKeys.class);
