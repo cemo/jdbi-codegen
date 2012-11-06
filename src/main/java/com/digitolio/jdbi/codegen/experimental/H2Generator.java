@@ -5,10 +5,16 @@ import com.digitolio.jdbi.strategy.SnakeCaseTranslatingStrategy;
 import com.digitolio.jdbi.table.Column;
 import com.digitolio.jdbi.table.Table;
 import com.digitolio.jdbi.table.TableResolver;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,16 +44,26 @@ public class H2Generator {
         for (Class<?> aClass : classes) {
             Table resolve = tableResolver.resolve(aClass, strategy);
             H2Generator h2Generator = new H2Generator(resolve, aClass, targetDir);
-            h2Generator.generate();
+            Object generate = h2Generator.generate();
+            String content = generate.toString();
+            File file = new File(args[1].concat("/db/h2/").concat(resolve.getTableName().toLowerCase().concat(".ddl")));
+            Files.createParentDirs(file);
+            BufferedWriter bufferedWriter = Files.newWriter(file,
+                                                            Charset.defaultCharset());
+            bufferedWriter.write(content);
+            bufferedWriter.close();
         }
+
+
     }
 
 
-    private void generate() {
+    private Object generate() {
         StringBuilder builder = new StringBuilder();
         builder.append("drop table ").append(table.getTableName()).append(" if exists;\n");
         builder.append("create table ").append(table.getTableName()).append("(\n");
         int a = 0;
+
         for (Column column : table.getAllColumns()) {
             builder.append("\t");
             if(a++>0){builder.append(",");}
@@ -57,12 +73,32 @@ public class H2Generator {
                    .append(getNullInfo(column))
                    .append("\n");
         }
-        builder.append(")\n");
-        System.out.println(builder.toString());
+
+        builder.append("\t,primary key(");
+        List<String> l = Lists.newArrayList();
+        for (Column column : table.getPrimaryKeyColumns()) {
+            l.add(column.getDatabaseName());
+        }
+        builder.append(Joiner.on(", ").join(l));
+        builder.append(")");
+
+        builder.append("\n);");
+//        System.out.println(builder.toString());
+        return builder.toString();
     }
 
     private String getNullInfo(Column column) {
-        return " not null ";
+        com.digitolio.jdbi.annotations.Column annotation = column.getField().getAnnotation(
+                com.digitolio.jdbi.annotations.Column.class);
+        boolean nullable = false;
+        if (annotation != null) {
+            nullable = annotation.nullable();
+        }
+        if (nullable) {
+            return " null ";
+        } else {
+            return " not null ";
+        }
     }
 
     private String getDbType(Column column) {
@@ -72,14 +108,14 @@ public class H2Generator {
         } else if (Long.class.isAssignableFrom(clazz)) {
             return "bigint";
         } else if (String.class.isAssignableFrom(clazz)) {
-            return "varchar(20)";
+            return "varchar(128)";
         }else if (Date.class.isAssignableFrom(clazz)) {
             return "datetime";
         }else if (Enum.class.isAssignableFrom(clazz)) {
-            return "varchar(20)";
+            return "varchar(128)";
         }
 
-        return "bu ne amk";
+        return "doktor bu ne";
 
     }
 
