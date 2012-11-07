@@ -40,20 +40,25 @@ public class H2Generator {
         Set<Class<?>> classes = new Scanner().scanPackage(args[0]);
 //        File targetDir = new File("D:\\PersonalProjects\\digitolio\\jdbi-codegen\\src\\main\\java\\cemo");
         File targetDir = new File(args[1]);
-
+        StringBuilder allDdl = new StringBuilder();
         for (Class<?> aClass : classes) {
             Table resolve = tableResolver.resolve(aClass, strategy);
             H2Generator h2Generator = new H2Generator(resolve, aClass, targetDir);
             Object generate = h2Generator.generate();
             String content = generate.toString();
+            allDdl.append(content).append("\n\n");
             File file = new File(args[1].concat("/db/h2/").concat(resolve.getTableName().toLowerCase().concat(".ddl")));
             Files.createParentDirs(file);
-            BufferedWriter bufferedWriter = Files.newWriter(file,
-                                                            Charset.defaultCharset());
+            BufferedWriter bufferedWriter = Files.newWriter(file, Charset.defaultCharset());
             bufferedWriter.write(content);
             bufferedWriter.close();
         }
 
+        File file = new File(args[1].concat("/db/h2/all-").concat(args[2]).concat(".ddl"));
+        Files.createParentDirs(file);
+        BufferedWriter bufferedWriter = Files.newWriter(file, Charset.defaultCharset());
+        bufferedWriter.write(allDdl.toString());
+        bufferedWriter.close();
 
     }
 
