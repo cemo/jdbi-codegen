@@ -33,6 +33,7 @@ public class H2Generator {
     }
 
     public static void main(String[] args) throws IOException {
+        if("OVERWRITE_THIS_VALUE".equals(args[0])){return;}
         SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
 
