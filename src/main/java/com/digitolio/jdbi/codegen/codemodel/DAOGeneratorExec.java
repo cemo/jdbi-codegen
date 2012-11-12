@@ -17,7 +17,7 @@ public class DAOGeneratorExec {
 
     public static void main(String[] args) {
 
-        if("OVERWRITE_THIS_VALUE".equals(args[0])){return;}
+        if(args[0].contains("OVERWRITE_THIS_VALUE")){return;}
 
         SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
