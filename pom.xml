@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.digitolio</groupId>
     <artifactId>jdbi-codegen</artifactId>
-    <version>0.2.6.3</version>
+    <version>0.2.6.4-SNAPSHOT</version>
     <name>${project.groupId}:${project.artifactId}:${project.version}</name>
     <description>JDBI code generation experiments</description>
     <properties>
@@ -45,7 +45,7 @@
         <connection>scm:git:git@github.com:cemo/jdbi-codegen.git</connection>
         <developerConnection>scm:git:git@github.com:cemo/jdbi-codegen.git</developerConnection>
         <url>http://github.com/cemo/jdbi-codegen/</url>
-      <tag>v0.2.6.3</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>
