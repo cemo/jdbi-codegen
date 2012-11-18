@@ -8,6 +8,7 @@ import com.digitolio.jdbi.table.Table;
 import com.digitolio.jdbi.table.TableResolver;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.google.common.io.Files;
 
 import java.io.BufferedWriter;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -41,11 +43,14 @@ public class H2Generator {
         SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
 
-//        Set<Class<?>> classes = new Scanner().scanPackage("com.digitolio.jdbi.codegen.test");
-        Set<Class<?>> classes = new Scanner().scanPackage(args[0]);
+//        Set<Class<?>> inputClasses = new Scanner().scanPackage("com.digitolio.jdbi.codegen.test");
+        Set<Class<?>> inputClasses = scanPackage(args[0]);
+        List<Class<?>> classes = orderClasses(inputClasses);
+        cleanDirectoryForNewDll(new File(args[1].concat("/db/h2/")));
 //        File targetDir = new File("D:\\PersonalProjects\\digitolio\\jdbi-codegen\\src\\main\\java\\cemo");
         File targetDir = new File(args[1]);
         StringBuilder allDdl = new StringBuilder();
+
         for (Class<?> aClass : classes) {
             Table resolve = tableResolver.resolve(aClass, strategy);
             H2Generator h2Generator = new H2Generator(resolve, aClass, targetDir);
@@ -65,6 +70,28 @@ public class H2Generator {
         bufferedWriter.write(allDdl.toString());
         bufferedWriter.close();
 
+    }
+
+    @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
+    private static void cleanDirectoryForNewDll(File targetDir) {
+        if (targetDir.exists()) {
+            for (File file : targetDir.listFiles()) {
+                boolean delete = file.delete();
+            }
+        }
+    }
+
+    private static Set<Class<?>> scanPackage(String arg) {
+        return new Scanner().scanPackage(arg);
+    }
+
+    private static List<Class<?>> orderClasses(Set<Class<?>> inputClasses) {
+        return Ordering.from(new Comparator<Class>() {
+            @Override
+            public int compare(Class o1, Class o2) {
+                return o1.getSimpleName().compareTo(o2.getSimpleName());
+            }
+        }).sortedCopy(inputClasses);
     }
 
 
