@@ -1,5 +1,6 @@
 package com.digitolio.jdbi.codegen.experimental;
 
+import com.digitolio.jdbi.annotations.CodeGen;
 import com.digitolio.jdbi.annotations.PK;
 import com.digitolio.jdbi.codegen.Scanner;
 import com.digitolio.jdbi.strategy.SnakeCaseTranslatingStrategy;
@@ -82,7 +83,7 @@ public class H2Generator {
     }
 
     private static Set<Class<?>> scanPackage(String arg) {
-        return new Scanner().scanPackage(arg);
+        return new Scanner().scanPackage(arg, CodeGen.DDL_GEN);
     }
 
     private static List<Class<?>> orderClasses(Set<Class<?>> inputClasses) {

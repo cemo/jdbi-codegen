@@ -1,5 +1,6 @@
 package com.digitolio.jdbi.codegen.codemodel;
 
+import com.digitolio.jdbi.annotations.CodeGen;
 import com.digitolio.jdbi.codegen.Scanner;
 import com.digitolio.jdbi.strategy.SnakeCaseTranslatingStrategy;
 import com.digitolio.jdbi.table.Table;
@@ -21,8 +22,8 @@ public class DAOGeneratorExec {
 
         SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
-
-        Set<Class<?>> classes = new Scanner().scanPackage(args[0]);
+        Scanner scanner = new Scanner();
+        Set<Class<?>> classes = scanner.scanPackage(args[0], CodeGen.CODE_GEN);
         File targetDir = new File(args[1]);
 
         for (Class<?> aClass : classes) {
