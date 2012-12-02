@@ -172,6 +172,8 @@ public class H2Generator {
             return "int";
         } else if (Long.class.isAssignableFrom(clazz)) {
             return "bigint";
+        } else if (Double.class.isAssignableFrom(clazz)) {
+                return "double";
         } else if (String.class.isAssignableFrom(clazz)) {
             return "varchar(128)";
         } else if (Date.class.isAssignableFrom(clazz)) {
