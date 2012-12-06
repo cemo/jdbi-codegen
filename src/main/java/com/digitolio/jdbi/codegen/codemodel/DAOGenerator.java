@@ -114,12 +114,20 @@ public class DAOGenerator {
 
     private JDefinedClass createClassDefinition(JCodeModel codeModel,
                                                 Class entityClass) throws JClassAlreadyExistsException {
-        String daoPackage = getDaoPackage(clazz.getPackage());
+       Package aPackage = clazz.getPackage();
+
+       String daoPackage =
+          aPackage == null ?
+          getDaoPackage(clazz.getName().split(".".concat(clazz.getSimpleName()))[0]) :
+          getDaoPackage(aPackage);
+
         return codeModel._class(getFullDaoClassName(daoPackage, clazz), ClassType.INTERFACE);
     }
 
     private String getDaoPackage(Package aPackage) {
-        String name = aPackage.getName();
+       return getDaoPackage(aPackage.getName());
+    }
+    private String getDaoPackage(String name) {
         return name.concat(".").substring(0, name.lastIndexOf(".") + 1).concat("dao");
     }
 

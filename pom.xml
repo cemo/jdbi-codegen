@@ -148,10 +148,21 @@
             <artifactId>codemodel</artifactId>
             <version>${codemodel.version}</version>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>${reflections.version}</version>
+        </dependency>-->
+       <dependency>
+          <groupId>net.sf.extcos</groupId>
+          <artifactId>extcos</artifactId>
+          <version>0.4b</version>
+          <exclusions>
+             <exclusion>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+             </exclusion>
+          </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
