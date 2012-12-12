@@ -88,7 +88,7 @@ public class DAOGenerator {
     void cleanDirty(@BindBean Iterator<BasicProfile> iterator);
     */
     private void addCleanDirty(JCodeModel codeModel,JDefinedClass classDefinition, Table table, Class<?> clazz) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Void.class, "cleanDirty");
+        JMethod method = classDefinition.method(JMod.ABSTRACT, JType.parse(codeModel, "void"), "cleanDirty");
         JAnnotationUse batchAnnotation = method.annotate(SqlBatch.class);
         SqlDirtyClean sqlDirtyClean = new SqlDirtyClean(table);
         batchAnnotation.param("value", sqlDirtyClean.generate(new Binding()));
