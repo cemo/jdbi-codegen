@@ -48,8 +48,10 @@ public class DAOGenerator {
         addDeleteById(classDefinition, table, clazz);
         try {
             if (clazz.getDeclaredField("dirty") != null) {
-                addGetDirty(classDefinition, table, clazz);
-                addCleanDirty(codeModel, classDefinition, table, clazz);
+                addGetDirty(codeModel, classDefinition, table, clazz);
+                if(!table.getPrimaryKeyColumns().isEmpty()){
+                    addCleanDirty(codeModel, classDefinition, table, clazz);
+                }
             }
         } catch (NoSuchFieldException ignored) {
 
@@ -67,8 +69,10 @@ public class DAOGenerator {
 */
 
 
-    private void addGetDirty(JDefinedClass classDefinition, Table table, Class<?> clazz) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "getDirty" + inflector.pluralize(clazz.getSimpleName()));
+    private void addGetDirty(JCodeModel codeModel, JDefinedClass classDefinition, Table table, Class<?> clazz) {
+        JClass ref = codeModel.ref(List.class);
+        JClass narrowed = ref.narrow(clazz);
+        JMethod method = classDefinition.method(JMod.ABSTRACT, narrowed, "getDirty" + inflector.pluralize(clazz.getSimpleName()));
         JAnnotationUse queryAnnotation = method.annotate(SqlQuery.class);
         method.annotate(StrategyAwareMapBean.class);
         method.annotate(SingleValueResult.class);
@@ -84,7 +88,7 @@ public class DAOGenerator {
     void cleanDirty(@BindBean Iterator<BasicProfile> iterator);
     */
     private void addCleanDirty(JCodeModel codeModel,JDefinedClass classDefinition, Table table, Class<?> clazz) {
-        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "cleanDirty");
+        JMethod method = classDefinition.method(JMod.ABSTRACT, Void.class, "cleanDirty");
         JAnnotationUse batchAnnotation = method.annotate(SqlBatch.class);
         SqlDirtyClean sqlDirtyClean = new SqlDirtyClean(table);
         batchAnnotation.param("value", sqlDirtyClean.generate(new Binding()));

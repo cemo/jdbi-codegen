@@ -71,9 +71,9 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+           <id>snapshots</id>
+           <url>http://nexus.magnetdigital.local/content/repositories/snapshots</url>
+           <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>

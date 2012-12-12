@@ -1,8 +1,11 @@
 package com.digitolio.jdbi.codegen.codemodel;
 
 import com.digitolio.jdbi.auto.SqlSupport;
+import com.digitolio.jdbi.table.Column;
 import com.digitolio.jdbi.table.Table;
 import org.skife.jdbi.v2.Binding;
+
+import java.util.List;
 
 /**
  * UPDATE BASIC_PROFILE SET DIRTY = 0 WHERE USER_ID = :userId
@@ -31,7 +34,12 @@ public class SqlDirtyClean extends SqlSupport {
     }
 
     private String initWherePart() {
-        return " WHERE USER_ID = :userId";
+        List<Column> primaryKeys = table.getPrimaryKeyColumns();
+        StringBuilder builder = new StringBuilder(" WHERE ");
+        for (Column entry : primaryKeys) {
+            builder.append(entry.getDatabaseName()).append(" = :").append(entry.getFieldName()).append(" AND ");
+        }
+        return builder.substring(0,builder.length() - 5);
     }
 
     @Override
