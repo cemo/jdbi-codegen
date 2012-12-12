@@ -11,13 +11,16 @@ import com.digitolio.jdbi.table.Table;
 import com.google.common.base.Optional;
 import com.google.common.io.Files;
 import com.sun.codemodel.*;
+import com.sun.jersey.core.impl.provider.entity.Inflector;
 import org.skife.jdbi.v2.Binding;
 import org.skife.jdbi.v2.sqlobject.*;
+import org.skife.jdbi.v2.sqlobject.customizers.BatchChunkSize;
 import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -28,7 +31,7 @@ public class DAOGenerator {
     private final Table table;
     private final Class<?> clazz;
     private final File targetDir;
-
+    private Inflector inflector = Inflector.getInstance();
     public DAOGenerator(Class<?> aClass, Table table, File targetDir) {
         this.clazz = aClass;
         this.table = table;
@@ -43,9 +46,58 @@ public class DAOGenerator {
         addInsert(classDefinition, table, clazz);
         addUpdate(classDefinition, table, clazz);
         addDeleteById(classDefinition, table, clazz);
+        try {
+            if (clazz.getDeclaredField("dirty") != null) {
+                addGetDirty(classDefinition, table, clazz);
+                addCleanDirty(codeModel, classDefinition, table, clazz);
+            }
+        } catch (NoSuchFieldException ignored) {
+
+        }
         Files.createParentDirs(targetDir);
         codeModel.build(targetDir);
 
+    }
+
+/*
+    @StrategyAwareMapBean
+    @SingleValueResult
+    @SqlQuery("SELECT * FROM BASIC_PROFILE WHERE DIRTY = 1 LIMIT :limit")
+    List<BasicProfile> getDirtyBasicProfiles(@Bind("limit") Integer limit);
+*/
+
+
+    private void addGetDirty(JDefinedClass classDefinition, Table table, Class<?> clazz) {
+        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "getDirty" + inflector.pluralize(clazz.getSimpleName()));
+        JAnnotationUse queryAnnotation = method.annotate(SqlQuery.class);
+        method.annotate(StrategyAwareMapBean.class);
+        method.annotate(SingleValueResult.class);
+        SqlDirtyGet sqlDirtyGet = new SqlDirtyGet(table);
+        queryAnnotation.param("value", sqlDirtyGet.generate(new Binding()));
+        JVar limit = method.param(Integer.class, "limit");
+        JAnnotationUse bind = limit.annotate(Bind.class);
+        bind.param("value", "limit");
+    }
+    /*
+    @SqlBatch("UPDATE BASIC_PROFILE SET DIRTY = 0 WHERE USER_ID = :userId")
+    @BatchChunkSize(100)
+    void cleanDirty(@BindBean Iterator<BasicProfile> iterator);
+    */
+    private void addCleanDirty(JCodeModel codeModel,JDefinedClass classDefinition, Table table, Class<?> clazz) {
+        JMethod method = classDefinition.method(JMod.ABSTRACT, Integer.class, "cleanDirty");
+        JAnnotationUse batchAnnotation = method.annotate(SqlBatch.class);
+        SqlDirtyClean sqlDirtyClean = new SqlDirtyClean(table);
+        batchAnnotation.param("value", sqlDirtyClean.generate(new Binding()));
+
+        JAnnotationUse batchAnnotate = method.annotate(BatchChunkSize.class);
+        batchAnnotate.param("value", 100);
+
+
+        final JClass ref = codeModel.ref(Iterator.class);
+        final JClass gen = codeModel.ref(clazz);
+        JClass narrowed = ref.narrow(gen);
+        JVar iterator = method.param(narrowed, "iterator");
+        iterator.annotate(BindBean.class);
     }
 
     private void addDeleteById(JDefinedClass classDefinition, Table table, Class clazz) {
@@ -62,7 +114,7 @@ public class DAOGenerator {
 
     private void addSelectById(JCodeModel codeModel, JDefinedClass classDefinition, Table table, Class<?> clazz) {
         JClass jClass = codeModel.ref(Optional.class).narrow(codeModel.ref(clazz));
-        JMethod method = classDefinition.method(JMod.ABSTRACT, jClass, "select"+ clazz.getSimpleName());
+        JMethod method = classDefinition.method(JMod.ABSTRACT, jClass, "select" + clazz.getSimpleName());
         method.type();
         method.annotate(StrategyAwareMapBean.class);
         method.annotate(SingleValueResult.class);
@@ -114,19 +166,20 @@ public class DAOGenerator {
 
     private JDefinedClass createClassDefinition(JCodeModel codeModel,
                                                 Class entityClass) throws JClassAlreadyExistsException {
-       Package aPackage = clazz.getPackage();
+        Package aPackage = clazz.getPackage();
 
-       String daoPackage =
-          aPackage == null ?
-          getDaoPackage(clazz.getName().split(".".concat(clazz.getSimpleName()))[0]) :
-          getDaoPackage(aPackage);
+        String daoPackage =
+                aPackage == null ?
+                        getDaoPackage(clazz.getName().split(".".concat(clazz.getSimpleName()))[0]) :
+                        getDaoPackage(aPackage);
 
         return codeModel._class(getFullDaoClassName(daoPackage, clazz), ClassType.INTERFACE);
     }
 
     private String getDaoPackage(Package aPackage) {
-       return getDaoPackage(aPackage.getName());
+        return getDaoPackage(aPackage.getName());
     }
+
     private String getDaoPackage(String name) {
         return name.concat(".").substring(0, name.lastIndexOf(".") + 1).concat("dao");
     }
