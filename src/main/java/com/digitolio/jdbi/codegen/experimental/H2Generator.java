@@ -98,7 +98,7 @@ public class H2Generator {
 
     private Object generate() {
         StringBuilder builder = new StringBuilder();
-        builder.append("drop table ").append(table.getTableName()).append(" if exists;\n");
+        builder.append("drop table if exists ").append(table.getTableName()).append(";\n");
         builder.append("create table ").append(table.getTableName()).append("(\n");
         int a = 0;
 
