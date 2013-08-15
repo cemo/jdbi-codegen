@@ -7,20 +7,21 @@ import com.digitolio.jdbi.strategy.SnakeCaseTranslatingStrategy;
 import com.digitolio.jdbi.table.Column;
 import com.digitolio.jdbi.table.Table;
 import com.digitolio.jdbi.table.TableResolver;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.io.Files;
 
+import javax.annotation.Nullable;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author C.Koc
@@ -124,12 +125,45 @@ public class H2Generator {
         builder.append(Joiner.on(", ").join(l));
         builder.append(")");
 
+        if(!table.getUniqueIndexes().isEmpty()){
+            builder.append("\n\t,");
+            builder.append(getUniqueIndexes(table.getUniqueIndexes()));
+        }
         builder.append("\n);");
+
+
 //        System.out.println(builder.toString());
         return builder.toString();
     }
 
-    private String getDefaultInfo(Column column) {
+       //  UNIQUE KEY `NAME_CITYID_UNIQUE` (`CITY_ID`,`NAME`)
+   private String getUniqueIndexes(Map<String, List<Column>> uniqueIndexes) {
+      List<String> list = Lists.newArrayList();
+
+      for(Map.Entry<String, List<Column>> entry : uniqueIndexes.entrySet()) {
+         StringBuilder builder = new StringBuilder();
+         builder.append("unique key ").append(entry.getKey()).append(" (");
+         ImmutableList<String> columnNames = getColumnNames(entry.getValue());
+
+         String join = Joiner.on(",").join(getColumnNames(entry.getValue()));
+         builder.append(join).append(")");
+         list.add(builder.toString());
+      }
+      return Joiner.on("\n\t,").join(list);
+   }
+
+   private ImmutableList<String> getColumnNames(List<Column> value) {
+      return FluentIterable.from(value).transform(new Function<Column, String>() {
+         @Nullable
+         @Override
+         public String apply(Column input) {
+//            return "`".concat(input.getDatabaseName()).concat("`");
+            return input.getDatabaseName();
+         }
+      }).toList();
+   }
+
+   private String getDefaultInfo(Column column) {
         com.digitolio.jdbi.annotations.Column annotation = column.getField().getAnnotation(
                 com.digitolio.jdbi.annotations.Column.class);
         String defaultValue = "";
