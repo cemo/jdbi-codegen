@@ -9,6 +9,7 @@ import com.digitolio.jdbi.table.Table;
 import com.digitolio.jdbi.table.TableResolver;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -39,15 +40,17 @@ public class H2Generator {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args[0].contains("OVERWRITE_THIS_VALUE")) {
+       String pack = args[0];
+       if (Strings.isNullOrEmpty(pack) || pack.contains("OVERWRITE_THIS_VALUE")) {
             return;
         }
         SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
 
 //        Set<Class<?>> inputClasses = new Scanner().scanPackage("com.digitolio.jdbi.codegen.test");
-        Set<Class<?>> inputClasses = scanPackage(args[0]);
+        Set<Class<?>> inputClasses = scanPackage(pack);
         List<Class<?>> classes = orderClasses(inputClasses);
+        if(classes.isEmpty()) return;
         cleanDirectoryForNewDll(new File(args[1].concat("/db/h2/")));
 //        File targetDir = new File("D:\\PersonalProjects\\digitolio\\jdbi-codegen\\src\\main\\java\\cemo");
         File targetDir = new File(args[1]);

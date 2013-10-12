@@ -5,6 +5,7 @@ import com.digitolio.jdbi.codegen.Scanner;
 import com.digitolio.jdbi.strategy.SnakeCaseTranslatingStrategy;
 import com.digitolio.jdbi.table.Table;
 import com.digitolio.jdbi.table.TableResolver;
+import com.google.common.base.Strings;
 import com.sun.codemodel.JClassAlreadyExistsException;
 
 import java.io.File;
@@ -18,12 +19,14 @@ public class DAOGeneratorExec {
 
     public static void main(String[] args) {
 
-        if(args[0].contains("OVERWRITE_THIS_VALUE")){return;}
+       String pack = args[0];
+       if(Strings.isNullOrEmpty(pack) || pack.contains("OVERWRITE_THIS_VALUE")){return;}
 
         SnakeCaseTranslatingStrategy strategy = new SnakeCaseTranslatingStrategy();
         TableResolver tableResolver = new TableResolver();
         Scanner scanner = new Scanner();
         Set<Class<?>> classes = scanner.scanPackage(args[0], CodeGen.CODE_GEN);
+        if(classes.isEmpty()) return;
         File targetDir = new File(args[1]);
 
         for (Class<?> aClass : classes) {

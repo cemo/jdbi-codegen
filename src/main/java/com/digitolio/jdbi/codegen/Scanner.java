@@ -45,6 +45,6 @@ public class Scanner {
                         }
                         return true;
                     }
-                }).toImmutableSet();
+                }).toSet();
     }
 }
