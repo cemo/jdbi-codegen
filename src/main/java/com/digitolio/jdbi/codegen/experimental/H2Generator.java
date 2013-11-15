@@ -132,6 +132,11 @@ public class H2Generator {
             builder.append("\n\t,");
             builder.append(getUniqueIndexes(table.getUniqueIndexes()));
         }
+
+        if(!table.getIndexes().isEmpty()){
+            builder.append("\n\t,");
+            builder.append(getIndexes(table.getIndexes()));
+        }
         builder.append("\n);");
 
 
@@ -146,6 +151,21 @@ public class H2Generator {
       for(Map.Entry<String, List<Column>> entry : uniqueIndexes.entrySet()) {
          StringBuilder builder = new StringBuilder();
          builder.append("unique key ").append(entry.getKey()).append(" (");
+         ImmutableList<String> columnNames = getColumnNames(entry.getValue());
+
+         String join = Joiner.on(",").join(getColumnNames(entry.getValue()));
+         builder.append(join).append(")");
+         list.add(builder.toString());
+      }
+      return Joiner.on("\n\t,").join(list);
+   }
+       //  KEY `NAME_CITYID_UNIQUE` (`CITY_ID`,`NAME`)
+   private String getIndexes(Map<String, List<Column>> uniqueIndexes) {
+      List<String> list = Lists.newArrayList();
+
+      for(Map.Entry<String, List<Column>> entry : uniqueIndexes.entrySet()) {
+         StringBuilder builder = new StringBuilder();
+         builder.append("key ").append(entry.getKey()).append(" (");
          ImmutableList<String> columnNames = getColumnNames(entry.getValue());
 
          String join = Joiner.on(",").join(getColumnNames(entry.getValue()));
@@ -213,7 +233,7 @@ public class H2Generator {
         } else if (Double.class.isAssignableFrom(clazz)) {
                 return "double";
         } else if (String.class.isAssignableFrom(clazz)) {
-            return "varchar(128)";
+            return column.getLength() == -1 ? "varchar(128)" : "varchar("+ column.getLength() +")";
         } else if (Date.class.isAssignableFrom(clazz)) {
             return "datetime";
         } else if (Enum.class.isAssignableFrom(clazz)) {
